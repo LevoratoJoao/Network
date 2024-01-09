@@ -13,8 +13,7 @@ from .models import User, Posts, Followers
 
 def index(request):
     return render(request, "network/index.html", {
-        "posts": Posts.objects.all(),
-        
+        "posts": Posts.objects.order_by("-creationDate").all(),
     })
 
 
@@ -65,6 +64,7 @@ def register(request):
                 "message": "Username already taken."
             })
         login(request, user)
+        # Followers.objects.create(following=None, follower=None) ##################################
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "network/register.html")
@@ -74,10 +74,42 @@ def create_post(request):
     if request.method == "POST":
         content = request.POST["content"]
         poster = request.user
-        print(content, poster)
-
         post = Posts.objects.create(poster=poster, content=content)
         post.save()
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "")
+
+def profile_view(request, poster_id):
+    isFollowing = False
+    try:
+        user = User.objects.get(pk=poster_id)
+        posts = Posts.objects.filter(poster=user)
+    except:
+        return HttpResponseRedirect(reverse("index"))
+    aux = Followers.objects.get(follower=request.user)
+    if aux.following.username == user.username:
+        isFollowing = True
+    if request.method == "GET":
+        return render(request, f"network/profile.html", {
+            "profile": user,
+            "posts": posts,
+            "isFollowing": isFollowing
+        })
+    else:
+        return HttpResponseRedirect(reverse("index"))
+
+@login_required
+def follow_view(request, profile_id):
+    Followers.objects.all().delete()
+    follow = Followers(follower=request.user, following=User.objects.get(pk=profile_id))
+    follow.save()
+    return HttpResponseRedirect(reverse("profile", args=(profile_id,)))
+
+@login_required
+def unfollow_view(request, profile_id):
+    follow = Followers.objects.get(follower=request.user)
+    follow.follower = None
+    follow.following = None
+    follow.save()
+    return HttpResponseRedirect(reverse("profile", args=(profile_id,)))

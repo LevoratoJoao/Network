@@ -20,5 +20,9 @@ class Posts(models.Model):
             "likes": self.likes.count()
         }
 
-class Followers:
-    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, related_name="poster")
+class Followers(models.Model):
+    follower = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="follower")
+    following = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="following")
+
+    def __str__(self):
+        return f"{self.follower.username} follow {self.following.username}"

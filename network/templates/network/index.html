@@ -1,4 +1,5 @@
 {% extends 'network/layout.html' %}
+{% comment %} {% load static %} {% endcomment %}
 
 {% block body %}
     <h1 style="margin-left: 20px;">All Posts</h1>
@@ -18,12 +19,12 @@
             </div>
         </div>
     {% endif %}
-    <div class="posts" style="margin-left: 20px; margin-right: 20px;">
+    <div id="posts" style="margin-left: 20px; margin-right: 20px;">
         {% for post in posts %}
             <br>
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">{{ post.poster }}</h5>
+                    <a id="profile" href="{% url 'profile' post.poster.id %}" class="card-link"><h5 class="card-title">{{ post.poster }}</h5></a>
                     <h6 class="card-subtitle mb-2 text-muted">{{ post.creationDate }}</h6>
                     <p class="card-text">{{ post.content }}</p>
                     <p class="card-text">Likes: {{ post.lokes|length }}</p>
@@ -32,3 +33,7 @@
         {% endfor %}
     </div>
 {% endblock %}
+{% comment %} {% block script %}
+    <script src="{% static 'network/script.js' %}"></script>
+{% endblock %} {% endcomment %}
+

@@ -1,0 +1,39 @@
+{% extends 'network/layout.html' %}
+
+{% block body %}
+    <div id="profile-page">
+        <div id="profile" class="card" style="margin-left: 20px; margin-right: 20px;">
+            <div class="card-body">
+                <h1 class="card-title">{{ profile.username }}</h1>
+                <h6 class="card-subtitle mb-2 text-muted">Followers: {{ profile.follower|length }} &nbsp; Following: {{ profile.following|length }}</h6>
+                {% if request.user != profile and user.is_authenticated %}
+                    {% if isFollowing == False %}
+                        <form action="{% url 'follow' profile.id %}" method="post">
+                            {% csrf_token %}
+                            <input type="submit" class="btn btn-primary btn-sm" value="Follow">
+                        </form>
+                    {% else %}
+                        <form action="{% url 'unfollow' profile.id %}" method="post">
+                            {% csrf_token %}
+                            <input type="submit" class="btn btn-danger btn-sm" value="Unfollow">
+                        </form>
+                    {% endif %}
+                {% endif %}
+            </div>
+            <div id="posts" style="margin-left: 20px; margin-right: 20px; margin-bottom: 20px;">
+                <h4>Posts</h4>
+                {% for post in posts %}
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ post.poster }}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">{{ post.creationDate }}</h6>
+                            <p class="card-text">{{ post.content }}</p>
+                            <p class="card-text">Likes: {{ post.lokes|length }}</p>
+                        </div>
+                    </div>
+                    <br>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
