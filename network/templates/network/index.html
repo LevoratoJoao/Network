@@ -1,5 +1,4 @@
 {% extends 'network/layout.html' %}
-{% comment %} {% load static %} {% endcomment %}
 
 {% block body %}
     <h1 style="margin-left: 20px;">All Posts</h1>
@@ -21,18 +20,35 @@
     {% endif %}
     <div id="posts" style="margin-left: 20px; margin-right: 20px;">
         {% for post in posts %}
-            <br>
-            <div class="card">
-                <div class="card-body">
-                    <a id="profile" href="{% url 'profile' post.poster.id %}" class="card-link"><h5 class="card-title">{{ post.poster }}</h5></a>
-                    <h6 class="card-subtitle mb-2 text-muted">{{ post.creationDate }}</h6>
-                    <p class="card-text">{{ post.content }}</p>
-                    <p class="card-text">Likes: {{ post.lokes|length }}</p>
-                </div>
+        <br>
+        <div class="card">
+            <div class="card-body">
+                <a id="profile" href="{% url 'profile' post.poster.username %}" class="card-link"><h5 class="card-title">{{ post.poster }}</h5></a>
+                <h6 class="card-subtitle mb-2 text-muted">{{ post.creationDate }}</h6>
+                <p class="card-text">{{ post.content }}</p>
+                <p class="card-text">Likes: {{ post.lokes|length }}</p>
             </div>
+        </div>
         {% endfor %}
     </div>
+    <div id="pag-div" style="margin-right: 20px; margin-top: 20px;">
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-end">
+                <li class="page-item"><a class="page-link" href="?page=1">&laquo; First page</a></li>
+                {% if posts.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ posts.previous_page_number }}">Previous Page</a></li>
+                {% endif %}
+                {% if posts.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ posts.next_page_number }}">Next Page</a></li>
+                {% endif %}
+                <li class="page-item"><a class="page-link" href="?page={{ posts.paginator.num_pages }}">Last Page &raquo;</a></li>
+            </ul>
+        </nav>
+    </div>
 {% endblock %}
+
+
+
 {% comment %} {% block script %}
     <script src="{% static 'network/script.js' %}"></script>
 {% endblock %} {% endcomment %}

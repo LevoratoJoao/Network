@@ -1,0 +1,37 @@
+{% extends 'network/layout.html' %}
+{% block body %}
+<h1 style="margin-left: 20px;">All Posts</h1>
+    {% if user.is_authenticated %}
+        <div class="posts" style="margin-left: 20px; margin-right: 20px;">
+            <div class="card">
+                <div class="card-body">
+                    <form action="{% url 'create' %}" method="post">
+                        {% csrf_token %}
+                        <div class="form-group" id="createPost-form">
+                            <h3><label for="new-post">New Post</label></h3>
+                            <textarea class="form-control" id="new-post" name="content" rows="3"></textarea>
+                        </div>
+                        <input class="btn btn-primary" type="submit" id="post-button" value="Post">
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    <div id="posts" style="margin-left: 20px; margin-right: 20px;">
+        {% for follow in following %}
+            {% for post in posts %}
+                {% if post.poster.username == follow.follower.username %}
+                    <br>
+                    <div class="card">
+                        <div class="card-body">
+                            <a id="profile" href="{% url 'profile' post.poster.username %}" class="card-link"><h5 class="card-title">{{ post.poster }}</h5></a>
+                            <h6 class="card-subtitle mb-2 text-muted">{{ post.creationDate }}</h6>
+                            <p class="card-text">{{ post.content }}</p>
+                            <p class="card-text">Likes: {{ post.lokes|length }}</p>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    </div>
+{% endblock %}

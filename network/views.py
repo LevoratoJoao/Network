@@ -7,13 +7,19 @@ from django.urls import reverse
 
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.views.generic import ListView
 
 from .models import User, Posts, Followers
 
 
 def index(request):
+    posts = Posts.objects.order_by("-creationDate").all()
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get("page", 1)
+    page_obj = paginator.get_page(page_number)
     return render(request, "network/index.html", {
-        "posts": Posts.objects.order_by("-creationDate").all(),
+        "posts": page_obj
     })
 
 
@@ -64,7 +70,6 @@ def register(request):
                 "message": "Username already taken."
             })
         login(request, user)
-        # Followers.objects.create(following=None, follower=None) ##################################
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "network/register.html")
@@ -80,18 +85,20 @@ def create_post(request):
     else:
         return render(request, "")
 
-def profile_view(request, poster_id):
+def profile_view(request, poster_name):
     isFollowing = False
     try:
-        user = User.objects.get(pk=poster_id)
+        user = User.objects.get(username=poster_name)
         posts = Posts.objects.filter(poster=user)
     except:
         return HttpResponseRedirect(reverse("index"))
-    aux = Followers.objects.get(follower=request.user)
-    if aux.following.username == user.username:
-        isFollowing = True
+
+    if request.user.is_authenticated:
+        aux = Followers.objects.filter(follower=user, following=request.user).exists()
+        if aux:
+            isFollowing = True
     if request.method == "GET":
-        return render(request, f"network/profile.html", {
+        return render(request, "network/profile.html", {
             "profile": user,
             "posts": posts,
             "isFollowing": isFollowing
@@ -100,16 +107,25 @@ def profile_view(request, poster_id):
         return HttpResponseRedirect(reverse("index"))
 
 @login_required
-def follow_view(request, profile_id):
-    Followers.objects.all().delete()
-    follow = Followers(follower=request.user, following=User.objects.get(pk=profile_id))
-    follow.save()
-    return HttpResponseRedirect(reverse("profile", args=(profile_id,)))
+def follow_view(request, profile_name):
+    Followers.objects.get_or_create(follower=User.objects.get(username=profile_name), following=request.user)
+    return HttpResponseRedirect(reverse("profile", args=(profile_name,)))
 
 @login_required
-def unfollow_view(request, profile_id):
-    follow = Followers.objects.get(follower=request.user)
-    follow.follower = None
-    follow.following = None
-    follow.save()
-    return HttpResponseRedirect(reverse("profile", args=(profile_id,)))
+def unfollow_view(request, profile_name):
+    try:
+        follow = Followers.objects.get(follower=User.objects.get(username=profile_name), following=request.user)
+    except Followers.DoesNotExist:
+        follow = None
+    if follow:
+        follow.delete()
+    return HttpResponseRedirect(reverse("profile", args=(profile_name,)))
+
+@login_required
+def following_view(request, user_name):
+    following = Followers.objects.filter(following=request.user)
+    posts = Posts.objects.all()
+    return render(request, "network/following.html", {
+        "following": following,
+        "posts": posts
+    })

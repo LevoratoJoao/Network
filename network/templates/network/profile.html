@@ -5,19 +5,12 @@
         <div id="profile" class="card" style="margin-left: 20px; margin-right: 20px;">
             <div class="card-body">
                 <h1 class="card-title">{{ profile.username }}</h1>
-                <h6 class="card-subtitle mb-2 text-muted">Followers: {{ profile.follower|length }} &nbsp; Following: {{ profile.following|length }}</h6>
-                {% if request.user != profile and user.is_authenticated %}
-                    {% if isFollowing == False %}
-                        <form action="{% url 'follow' profile.id %}" method="post">
-                            {% csrf_token %}
-                            <input type="submit" class="btn btn-primary btn-sm" value="Follow">
-                        </form>
-                    {% else %}
-                        <form action="{% url 'unfollow' profile.id %}" method="post">
-                            {% csrf_token %}
-                            <input type="submit" class="btn btn-danger btn-sm" value="Unfollow">
-                        </form>
-                    {% endif %}
+                <h6 class="card-subtitle mb-2 text-muted">Followers: {{ profile.follower.count }} &nbsp; Following: {{ profile.following.count }}</h6>
+                {% if request.user.username != profile.username and user.is_authenticated %}
+                    <form {% if isFollowing %} action="{% url 'unfollow' profile.username %}" {% else %} action="{% url 'follow' profile.username %}" {% endif %} method="post">
+                        {% csrf_token %}
+                        <input type="submit" {% if isFollowing %} class="btn btn-danger btn-sm" value="Unfollow" {% else %} class="btn btn-primary btn-sm" value="Follow" {% endif %}>
+                    </form>
                 {% endif %}
             </div>
             <div id="posts" style="margin-left: 20px; margin-right: 20px; margin-bottom: 20px;">
