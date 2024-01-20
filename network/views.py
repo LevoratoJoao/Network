@@ -89,7 +89,7 @@ def profile_view(request, poster_name):
     isFollowing = False
     try:
         user = User.objects.get(username=poster_name)
-        posts = Posts.objects.filter(poster=user)
+        posts = Posts.objects.filter(poster=user).order_by("-creationDate")
     except:
         return HttpResponseRedirect(reverse("index"))
 
@@ -129,3 +129,35 @@ def following_view(request, user_name):
         "following": following,
         "posts": posts
     })
+
+@csrf_exempt
+@login_required
+def edit_view(request, post_id):
+    if request.method != "PUT":
+        return JsonResponse({"error": "PUT request required"}, status=400)
+    content = json.loads(request.body)["content"]
+    if content == "":
+        return JsonResponse({"Error": "post can't be empty"}, status=404)
+    try:
+        post = Posts.objects.get(pk=post_id)
+        post.content = content
+        post.save()
+        return JsonResponse({"data": post.serialize(), "message": "Post edit"}, status=201)
+    except Posts.DoesNotExist:
+        return JsonResponse({"Error": "post not found"}, status=404)
+
+@csrf_exempt
+def like_view(request, post_id):
+    if request.method != "PUT":
+        return JsonResponse({"error": "PUT request required"}, status=400)
+    data = json.loads(request.body)
+    try:
+        post = Posts.objects.get(pk=post_id)
+        if data['like'] == 1:
+            post.likes.add(request.user)
+        else:
+            post.likes.remove(request.user)
+        post.save()
+        return JsonResponse({"data": post.serialize(), "message": "Post liked"}, status=201)
+    except Posts.DoesNotExist:
+        return JsonResponse({"Error": "post not found"}, status=404)

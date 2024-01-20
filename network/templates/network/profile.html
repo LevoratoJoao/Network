@@ -1,6 +1,44 @@
 {% extends 'network/layout.html' %}
 
 {% block body %}
+    <script>
+        function editHandler(id) {
+            if (document.querySelector(`#edit_post_${id}`).value == "") {
+                const errorMessage = document.createElement('p');
+                errorMessage.innerHTML = "You can't post an empty post!";
+                console.log(errorMessage)
+                document.querySelector('.modal-body').appendChild(errorMessage);
+                return;
+            }
+            fetch(`/edit/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    content: document.querySelector(`#edit_post_${id}`).value
+                })
+            })
+            .then((response) => response.json())
+            .then(post => {
+                console.log(post);
+                $(`#editModal_${id}`).modal('hide')
+                document.querySelector(`#post_${id}_content`).textContent = post.data.content;
+            });
+            }
+
+        function likeHandler(id, liked) {
+            fetch(`/like/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    like: liked
+                })
+            })
+            .then((response) => response.json())
+            .then(post => {
+                console.log(post);
+                document.querySelector(`#post_${id}_likes`).textContent = `Likes: ${post.data.likes}`;
+            });
+            }
+    </script>
+
     <div id="profile-page">
         <div id="profile" class="card" style="margin-left: 20px; margin-right: 20px;">
             <div class="card-body">
@@ -16,15 +54,45 @@
             <div id="posts" style="margin-left: 20px; margin-right: 20px; margin-bottom: 20px;">
                 <h4>Posts</h4>
                 {% for post in posts %}
+                    <br>
                     <div class="card">
                         <div class="card-body">
-                            <h5 class="card-title">{{ post.poster }}</h5>
+                            <a id="profile" href="{% url 'profile' post.poster.username %}" class="card-link"><h4 class="card-title">{{ post.poster }}</h4></a>
                             <h6 class="card-subtitle mb-2 text-muted">{{ post.creationDate }}</h6>
-                            <p class="card-text">{{ post.content }}</p>
-                            <p class="card-text">Likes: {{ post.lokes|length }}</p>
+                            <p class="card-text" id="post_{{ post.id }}_content">{{ post.content }}</p>
+                            <a class="card-text" id="post_{{ post.id }}_likes">Likes: {{ post.likes.count }}</a>
+                            {% if user.is_authenticated %}
+                                <button style="margin-left: 20px; padding: 0; border: none; background: none;" class="card-link" onclick="likeHandler({{ post.id }}, 1)"><i class="fa-regular fa-thumbs-up"></i></button>
+                                <button style="padding: 0; border: none; background: none;" class="card-link" onclick="likeHandler({{ post.id }}, -1)"><i class="fa-regular fa-thumbs-down"></i></i></button>
+                            {% endif %}
+                            {% if user.username == post.poster.username %}
+                                <br>
+                                <button style="margin-top: 10px;" type="button" class="btn btn-primary" data-toggle="modal" data-target="#editModal_{{ post.id }}">Edit post</button>
+                                <div class="modal fade" id="editModal_{{ post.id }}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="editModalLabel">Edit post</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <form id="edit-form">
+                                                {% csrf_token %}
+                                                <div class="modal-body">
+                                                    <textarea class="form-control" id="edit_post_{{ post.id }}" name="content" rows="3">{{ post.content }}</textarea>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                    <button class="btn btn-primary" type="button" id="post-button" onclick="editHandler({{ post.id }})">Save</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
-                    <br>
                 {% endfor %}
             </div>
         </div>
