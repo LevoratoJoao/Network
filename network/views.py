@@ -97,19 +97,54 @@ def profile_view(request, poster_name):
         aux = Followers.objects.filter(follower=user, following=request.user).exists()
         if aux:
             isFollowing = True
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get("page", 1)
+    page_obj = paginator.get_page(page_number)
     if request.method == "GET":
         return render(request, "network/profile.html", {
             "profile": user,
-            "posts": posts,
+            "posts": page_obj,
             "isFollowing": isFollowing
         })
     else:
         return HttpResponseRedirect(reverse("index"))
 
+# @csrf_exempt
+# @login_required
+# def follow_view(request, profile_name):
+#     if request.method != "POST":
+#         return JsonResponse({"error": "POST request required"}, status=400)
+#     try:
+#         Followers.objects.get_or_create(follower=User.objects.get(username=profile_name), following=request.user)
+#     except:
+#         return JsonResponse({"Error": "Could not follow"}, status=404)
+#     return JsonResponse({"follow": True, "message": f"{request.user} is following {profile_name}"}, status=201)
+
+# @csrf_exempt
+# @login_required
+# def unfollow_view(request, profile_name):
+#     if request.method != "POST":
+#         return JsonResponse({"error": "POST request required"}, status=400)
+#     try:
+#         follow = Followers.objects.get(follower=User.objects.get(username=profile_name), following=request.user)
+#     except Followers.DoesNotExist:
+#         follow = None
+#     if follow:
+#         follow.delete()
+#         return JsonResponse({"follow": False, "message": f"{request.user} is not following {profile_name}"}, status=201)
+#     return JsonResponse({"Error": "Could not unfollow"}, status=404)
+
 @login_required
 def follow_view(request, profile_name):
     Followers.objects.get_or_create(follower=User.objects.get(username=profile_name), following=request.user)
-    return HttpResponseRedirect(reverse("profile", args=(profile_name,)))
+    paginator = Paginator(Posts.objects.filter(poster=User.objects.get(username=profile_name),).order_by("-creationDate"), 10)
+    page_number = request.GET.get("page", 1)
+    page_obj = paginator.get_page(page_number)
+    return render(request, "network/profile.html", {
+            "profile": User.objects.get(username=profile_name),
+            "posts": page_obj,
+            "isFollowing": True
+    })
 
 @login_required
 def unfollow_view(request, profile_name):
@@ -119,15 +154,25 @@ def unfollow_view(request, profile_name):
         follow = None
     if follow:
         follow.delete()
-    return HttpResponseRedirect(reverse("profile", args=(profile_name,)))
+    paginator = Paginator(Posts.objects.filter(poster=User.objects.get(username=profile_name),).order_by("-creationDate"), 10)
+    page_number = request.GET.get("page", 1)
+    page_obj = paginator.get_page(page_number)
+    return render(request, "network/profile.html", {
+            "profile": User.objects.get(username=profile_name),
+            "posts": page_obj,
+            "isFollowing": True
+    })
 
 @login_required
 def following_view(request, user_name):
     following = Followers.objects.filter(following=request.user)
-    posts = Posts.objects.all()
+    posts = Posts.objects.order_by("-creationDate").all()
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get("page", 1)
+    page_obj = paginator.get_page(page_number)
     return render(request, "network/following.html", {
         "following": following,
-        "posts": posts
+        "posts": page_obj
     })
 
 @csrf_exempt

@@ -3,48 +3,11 @@
 {% load static %}
 
 {% block script %}
-    <script src="{% static 'network/script.js' %}"></script>
+<script src="{% static 'network/script.js' %}"></script>
 {% endblock %}
 
+
 {% block body %}
-    <script>
-        function editHandler(id) {
-            if (document.querySelector(`#edit_post_${id}`).value == "") {
-                const errorMessage = document.createElement('p');
-                errorMessage.innerHTML = "You can't post an empty post!";
-                console.log(errorMessage)
-                document.querySelector('.modal-body').appendChild(errorMessage);
-                return;
-            }
-            fetch(`/edit/${id}`, {
-                method: 'PUT',
-                body: JSON.stringify({
-                    content: document.querySelector(`#edit_post_${id}`).value
-                })
-            })
-            .then((response) => response.json())
-            .then(post => {
-                console.log(post);
-                $(`#editModal_${id}`).modal('hide')
-                document.querySelector(`#post_${id}_content`).textContent = post.data.content;
-              });
-            }
-
-        function likeHandler(id, liked) {
-            fetch(`/like/${id}`, {
-                method: 'PUT',
-                body: JSON.stringify({
-                    like: liked
-                })
-            })
-            .then((response) => response.json())
-            .then(post => {
-                console.log(post);
-                document.querySelector(`#post_${id}_likes`).textContent = `Likes: ${post.data.likes}`;
-              });
-            }
-    </script>
-
     <h1 style="margin-left: 20px;">All Posts</h1>
     {% if user.is_authenticated %}
         <div class="posts" style="margin-left: 20px; margin-right: 20px;">
@@ -64,7 +27,7 @@
     {% endif %}
     <div id="posts" style="margin-left: 20px; margin-right: 20px;">
         {% for post in posts %}
-        <br>
+            <br>
             <div class="card">
                 <div class="card-body">
                     <a id="profile" href="{% url 'profile' post.poster.username %}" class="card-link"><h4 class="card-title">{{ post.poster }}</h4></a>

@@ -1,44 +1,12 @@
 {% extends 'network/layout.html' %}
 
+{% load static %}
+
+{% block script %}
+    <script src="{% static 'network/script.js' %}"></script>
+{% endblock %}
+
 {% block body %}
-    <script>
-        function editHandler(id) {
-            if (document.querySelector(`#edit_post_${id}`).value == "") {
-                const errorMessage = document.createElement('p');
-                errorMessage.innerHTML = "You can't post an empty post!";
-                console.log(errorMessage)
-                document.querySelector('.modal-body').appendChild(errorMessage);
-                return;
-            }
-            fetch(`/edit/${id}`, {
-                method: 'PUT',
-                body: JSON.stringify({
-                    content: document.querySelector(`#edit_post_${id}`).value
-                })
-            })
-            .then((response) => response.json())
-            .then(post => {
-                console.log(post);
-                $(`#editModal_${id}`).modal('hide')
-                document.querySelector(`#post_${id}_content`).textContent = post.data.content;
-            });
-            }
-
-        function likeHandler(id, liked) {
-            fetch(`/like/${id}`, {
-                method: 'PUT',
-                body: JSON.stringify({
-                    like: liked
-                })
-            })
-            .then((response) => response.json())
-            .then(post => {
-                console.log(post);
-                document.querySelector(`#post_${id}_likes`).textContent = `Likes: ${post.data.likes}`;
-            });
-            }
-    </script>
-
     <div id="profile-page">
         <div id="profile" class="card" style="margin-left: 20px; margin-right: 20px;">
             <div class="card-body">
@@ -95,6 +63,21 @@
                     </div>
                 {% endfor %}
             </div>
+        </div>
+        <div id="pag-div" style="margin-left: 20px;">
+            <nav aria-label="Page navigation example">
+                <ul class="pagination justify-content-end">
+                    <li class="page-item"><a class="page-link" href="?page=1">&laquo; First page</a></li>
+                    {% if posts.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ posts.previous_page_number }}">Previous Page</a></li>
+                    {% endif %}
+                    <li class="page-item disabled"><a class="page-link">Page {{ posts.number }} of {{ posts.paginator.num_pages }}</a></li>
+                    {% if posts.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ posts.next_page_number }}">Next Page</a></li>
+                    {% endif %}
+                    <li class="page-item"><a class="page-link" href="?page={{ posts.paginator.num_pages }}">Last Page &raquo;</a></li>
+                </ul>
+            </nav>
         </div>
     </div>
 {% endblock %}

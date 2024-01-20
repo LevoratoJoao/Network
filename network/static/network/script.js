@@ -32,8 +32,8 @@ function editHandler(id) {
         console.log(post);
         $(`#editModal_${id}`).modal('hide')
         document.querySelector(`#post_${id}_content`).textContent = post.data.content;
-      });
-    }
+    });
+}
 
 function likeHandler(id, liked) {
     fetch(`/like/${id}`, {
@@ -46,5 +46,31 @@ function likeHandler(id, liked) {
     .then(post => {
         console.log(post);
         document.querySelector(`#post_${id}_likes`).textContent = `Likes: ${post.data.likes}`;
-      });
-    }
+    });
+}
+
+function followHandler(profile_name) {
+    fetch(`/follow/${profile_name}`, {
+        method: 'POST',
+        body: JSON.stringify({
+            username: profile_name
+        })
+    })
+    .then((response) => response.json())
+    .then(follow => {
+        console.log(follow);
+    })
+}
+
+function unfollowHandler(profile_name) {
+    fetch(`/unfollow/${profile_name}`, {
+        method: 'POST',
+        body: JSON.stringify({
+            username: profile_name
+        })
+    })
+    .then((response) => response.json())
+    .then(follow => {
+        console.log(follow);
+    })
+}

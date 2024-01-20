@@ -1,4 +1,11 @@
 {% extends 'network/layout.html' %}
+
+{% load static %}
+
+{% block script %}
+    <script src="{% static 'network/script.js' %}"></script>
+{% endblock %}
+
 {% block body %}
 <h1 style="margin-left: 20px;">All Posts</h1>
     {% if user.is_authenticated %}
@@ -21,17 +28,36 @@
         {% for follow in following %}
             {% for post in posts %}
                 {% if post.poster.username == follow.follower.username %}
-                    <br>
-                    <div class="card">
-                        <div class="card-body">
-                            <a id="profile" href="{% url 'profile' post.poster.username %}" class="card-link"><h4 class="card-title">{{ post.poster }}</h4></a>
-                            <h6 class="card-subtitle mb-2 text-muted">{{ post.creationDate }}</h6>
-                            <p class="card-text">{{ post.content }}</p>
-                            <p class="card-text">Likes: {{ post.lokes|length }}</p>
-                        </div>
+                <br>
+                <div class="card">
+                    <div class="card-body">
+                        <a id="profile" href="{% url 'profile' post.poster.username %}" class="card-link"><h4 class="card-title">{{ post.poster }}</h4></a>
+                        <h6 class="card-subtitle mb-2 text-muted">{{ post.creationDate }}</h6>
+                        <p class="card-text" id="post_{{ post.id }}_content">{{ post.content }}</p>
+                        <a class="card-text" id="post_{{ post.id }}_likes">Likes: {{ post.likes.count }}</a>
+                        {% if user.is_authenticated %}
+                            <button style="margin-left: 20px; padding: 0; border: none; background: none;" class="card-link" onclick="likeHandler({{ post.id }}, 1)"><i class="fa-regular fa-thumbs-up"></i></button>
+                            <button style="padding: 0; border: none; background: none;" class="card-link" onclick="likeHandler({{ post.id }}, -1)"><i class="fa-regular fa-thumbs-down"></i></i></button>
+                        {% endif %}
                     </div>
+                </div>
                 {% endif %}
             {% endfor %}
         {% endfor %}
+    </div>
+    <div id="pag-div" style="margin-left: 20px;">
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-end">
+                <li class="page-item"><a class="page-link" href="?page=1">&laquo; First page</a></li>
+                {% if posts.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ posts.previous_page_number }}">Previous Page</a></li>
+                {% endif %}
+                <li class="page-item disabled"><a class="page-link">Page {{ posts.number }} of {{ posts.paginator.num_pages }}</a></li>
+                {% if posts.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ posts.next_page_number }}">Next Page</a></li>
+                {% endif %}
+                <li class="page-item"><a class="page-link" href="?page={{ posts.paginator.num_pages }}">Last Page &raquo;</a></li>
+            </ul>
+        </nav>
     </div>
 {% endblock %}
