@@ -32,7 +32,7 @@ python3 manage.py createsuperuser
 
 # Demo
 
-Here it is a simple usage example on YouTube: [Demo](https://youtu.be/pcUBH0xVp_k).
+Here it is a simple usage example on YouTube: [Demo](https://youtu.be/Zp5AYUxsj3c).
 
 ## New Post
 
